@@ -8,7 +8,7 @@ import allure
 class TestApiPositive:
 
     @allure.title("Поиск фильма по названию")
-    def test_search_movie(self, api_token, base_url):
+    def test_search_movie(self, api_token: str, base_url: str) -> None:
         with allure.step("Отправить GET запрос поиска фильма"):
             response = requests.get(
                 f"{base_url}/v1.4/movie/search",
@@ -23,7 +23,7 @@ class TestApiPositive:
             assert "id" in response.json()["docs"][0]
 
     @allure.title("Получение карточки фильма по ID")
-    def test_get_movie_by_id(self, api_token, base_url):
+    def test_get_movie_by_id(self, api_token: str, base_url: str) -> None:
         with allure.step("Отправить GET запрос карточки фильма"):
             response = requests.get(
                 f"{base_url}/v1.4/movie/535341",
@@ -37,7 +37,7 @@ class TestApiPositive:
             assert "kp" in response.json()["rating"]
 
     @allure.title("Поиск персоны по имени")
-    def test_search_person(self, api_token, base_url):
+    def test_search_person(self, api_token: str, base_url: str) -> None:
         with allure.step("Отправить GET запрос поиска персоны"):
             response = requests.get(
                 f"{base_url}/v1.4/person/search",
@@ -57,7 +57,7 @@ class TestApiPositive:
 class TestApiNegative:
 
     @allure.title("Запрос без токена")
-    def test_no_token(self, base_url):
+    def test_no_token(self, base_url: str) -> None:
         with allure.step("Отправить запрос без токена"):
             response = requests.get(
                 f"{base_url}/v1.4/movie/search",
@@ -67,7 +67,7 @@ class TestApiNegative:
             assert response.status_code == 401
 
     @allure.title("Запрос с невалидным токеном")
-    def test_invalid_token(self, base_url):
+    def test_invalid_token(self, base_url: str) -> None:
         with allure.step("Отправить запрос с невалидным токеном"):
             response = requests.get(
                 f"{base_url}/v1.4/movie/search",
@@ -78,7 +78,9 @@ class TestApiNegative:
             assert response.status_code == 401
 
     @allure.title("Запрос с несуществующим ID фильма")
-    def test_nonexistent_movie_id(self, api_token, base_url):
+    def test_nonexistent_movie_id(
+        self, api_token: str, base_url: str
+    ) -> None:
         with allure.step("Отправить запрос с несуществующим ID"):
             response = requests.get(
                 f"{base_url}/v1.4/movie/99999999",
@@ -88,7 +90,7 @@ class TestApiNegative:
             assert response.status_code == 400
 
     @allure.title("Запрос с ID фильма строкой")
-    def test_movie_id_string(self, api_token, base_url):
+    def test_movie_id_string(self, api_token: str, base_url: str) -> None:
         with allure.step("Отправить запрос с ID строкой"):
             response = requests.get(
                 f"{base_url}/v1.4/movie/abcdef",
@@ -98,7 +100,9 @@ class TestApiNegative:
             assert response.status_code == 400
 
     @allure.title("Поиск персоны со спецсимволами")
-    def test_person_special_chars(self, api_token, base_url):
+    def test_person_special_chars(
+        self, api_token: str, base_url: str
+    ) -> None:
         with allure.step("Отправить запрос со спецсимволами"):
             response = requests.get(
                 f"{base_url}/v1.4/person/search",
