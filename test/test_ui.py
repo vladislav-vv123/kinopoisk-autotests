@@ -1,12 +1,7 @@
 import pytest
 import allure
 from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
-SEARCH_INPUT = "input[class*='kinopoisk-header-search-form-inp']"
+from pages import MainPage, MoviePage
 
 
 @pytest.mark.ui
@@ -15,83 +10,43 @@ class TestUI:
 
     @allure.title("Поиск фильма по названию")
     def test_search_movie(self, driver: WebDriver, ui_url: str) -> None:
-        with allure.step("Открыть главную страницу"):
-            driver.get(ui_url)
-
-        with allure.step("Найти поле поиска и ввести запрос"):
-            wait = WebDriverWait(driver, 15)
-            search = wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, SEARCH_INPUT)
-                )
-            )
-            search.send_keys("Начало")
-            search.send_keys(Keys.ENTER)
-
-        with allure.step("Проверить что результаты поиска отображаются"):
-            wait.until(EC.url_changes(ui_url))
-            assert "search" in driver.current_url
+        page = MainPage(driver, ui_url)
+        page.open()
+        page.search("Начало")
+        with allure.step("Проверить что URL изменился на страницу поиска"):
+            assert "search" in page.get_current_url(), \
+                "URL не содержит 'search' после поиска"
 
     @allure.title("Открытие карточки фильма")
     def test_open_movie_card(self, driver: WebDriver, ui_url: str) -> None:
-        with allure.step("Открыть страницу фильма"):
-            driver.get(f"{ui_url}/film/535341/")
-
-        with allure.step("Проверить что заголовок фильма отображается"):
-            wait = WebDriverWait(driver, 15)
-            title = wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "h1[itemprop='name']")
-                )
-            )
-            assert title.text != ""
+        page = MoviePage(driver, f"{ui_url}/film/535341/")
+        page.open()
+        with allure.step("Проверить что заголовок фильма не пустой"):
+            assert page.get_title() != "", "Заголовок фильма пустой"
 
     @allure.title("Проверка рейтинга на карточке фильма")
     def test_movie_rating(self, driver: WebDriver, ui_url: str) -> None:
-        with allure.step("Открыть страницу фильма"):
-            driver.get(f"{ui_url}/film/535341/")
-
-        with allure.step("Проверить что рейтинг отображается"):
-            wait = WebDriverWait(driver, 15)
-            rating = wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "span.film-rating-value")
-                )
-            )
-            assert rating.text != ""
+        page = MoviePage(driver, f"{ui_url}/film/535341/")
+        page.open()
+        with allure.step("Проверить что рейтинг не пустой"):
+            assert page.get_rating() != "", "Рейтинг фильма пустой"
 
     @allure.title("Поиск актёра по имени")
     def test_search_actor(self, driver: WebDriver, ui_url: str) -> None:
-        with allure.step("Открыть главную страницу"):
-            driver.get(ui_url)
-
-        with allure.step("Ввести имя актёра в поиск"):
-            wait = WebDriverWait(driver, 15)
-            search = wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, SEARCH_INPUT)
-                )
-            )
-            search.send_keys("Леонардо ДиКаприо")
-            search.send_keys(Keys.ENTER)
-
-        with allure.step("Проверить что результаты поиска отображаются"):
-            wait.until(EC.url_changes(ui_url))
-            assert driver.current_url != ui_url
+        page = MainPage(driver, ui_url)
+        page.open()
+        page.search("Леонардо ДиКаприо")
+        with allure.step("Проверить что URL изменился после поиска"):
+            assert page.get_current_url() != ui_url, \
+                "URL не изменился после поиска актёра"
 
     @allure.title("Проверка главной страницы Кинопоиска")
     def test_main_page_loads(self, driver: WebDriver, ui_url: str) -> None:
-        with allure.step("Открыть главную страницу"):
-            driver.get(ui_url)
-
+        page = MainPage(driver, ui_url)
+        page.open()
         with allure.step("Проверить заголовок страницы"):
-            assert "Кинопоиск" in driver.title
-
+            assert "Кинопоиск" in page.get_title(), \
+                "Заголовок страницы не содержит 'Кинопоиск'"
         with allure.step("Проверить что поле поиска присутствует"):
-            wait = WebDriverWait(driver, 15)
-            search = wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, SEARCH_INPUT)
-                )
-            )
-            assert search.is_displayed()
+            assert page.is_search_visible(), \
+                "Поле поиска не отображается на странице"
